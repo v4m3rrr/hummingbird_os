@@ -12,5 +12,5 @@ os-image: obj/boot/boot.bin
 
 $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/boot-second-stage.bin
 	cat $^ > $@
-$(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm
-	nasm -f bin $^ -o $@ 
+$(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm $(BOOT_DEPENDENCIES)
+	nasm -I $(SRC_DIR)/boot -f bin $< -o $@ 

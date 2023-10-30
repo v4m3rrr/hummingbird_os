@@ -33,11 +33,12 @@ xor ax,ax
 mov ds,ax
 
 ; Stack segment register and stack pointers
+mov ax,STACK_SEGMENT_POINTER
 mov ss,ax
-mov bp,BASE_STACK_POINTER
-mov sp,bp
+mov sp,BASE_STACK_POINTER
 
 ; Extended segment register
+xor ax,ax
 mov es,ax
 
 ; Turn interrupts back on
@@ -82,12 +83,14 @@ jmp 0x1000
 cli
 hlt
 
-BASE_STACK_POINTER equ 0x7b00
+BASE_STACK_POINTER equ 0x400 ; 1024 bytes (1KiB) of stack
+STACK_SEGMENT_POINTER equ 0x50 
+
 SECOND_STAGE_POINTER equ 0x1000
 KERNEL_POINTER equ 0x8000
 
-; CHANGE ALSO IN SECOND-STAGE (AT THE END)
-SECOND_STAGE_SECTORS_NUM equ 01h
+; SECOND_STAGE_SECTORS_NUM
+%include "boot-stage-shared-constants.asm"
 
 times 510-($-$$) db 0
 dw 0xaa55
