@@ -12,7 +12,7 @@ print_num_loop:
     div cx
     mov bx,ax
     mov ax,dx
-    add ax,48
+    add ax,'0'
     call putch
     mov ax,bx
     test ax,ax
@@ -73,7 +73,7 @@ new_line:
     int 0x10 ;dh-row,dl-col
 
     ; print spaces
-    mov cx,80
+    mov cx,SCREEN_WIDTH
     sub cl,dl
 new_line_loop:
     mov al,' '
@@ -86,4 +86,7 @@ new_line_loop:
     pop ax
     ret
 
+; Constants must be the same as in bios-prints-color
 PAGE_NUMBER equ 00h
+SCREEN_WIDTH equ 80
+SCREEN_HEIGHT equ 25
