@@ -47,6 +47,43 @@ sti
 ; Save drive number (dl)
 push dx
 
+; Setup video mode
+; Seting up mode clears the screen
+mov ah,00h
+mov al,03h ; 80x25 16-color text Color
+int 10h
+
+mov si,STR_VIDEO_MODE
+call print
+
+call puthex
+call new_line
+
+; Print segment registers log
+mov si,STR_SEGMENT_REGISTERS
+call print
+
+mov ax,cs
+call puthex
+
+mov al,' '
+call putch
+
+mov ax,ds
+call puthex
+
+mov al,' '
+call putch
+mov ax,ss
+call puthex
+
+mov al,' '
+call putch
+mov ax,es
+call puthex
+
+call new_line
+
 ; Read second stage sectors into memory
 mov ah,02h                      ; read sectors to memory option
 mov al,SECOND_STAGE_SECTORS_NUM ; amount of sectors to read
@@ -58,10 +95,14 @@ mov dh,00h                      ; head number
 ; Location es:bx
 xor bx,bx
 mov es,bx
-mov bx,1000h
+mov bx,SECOND_STAGE_POINTER
 int 13h
 
 push dx
+
+; Print log
+mov si,STR_SECOND_STAGE
+call print_disk_read_log
 
 ; Read kernel sectors into memory
 mov ah,02h                              ; read sectors to memory option
@@ -74,8 +115,12 @@ mov dh,00h                              ; head number
 ; Location es:bx
 xor bx,bx
 mov es,bx
-mov bx,1000h
+mov bx,KERNEL_POINTER
 int 13h
+
+; Print log
+mov si,STR_KERNEL
+call print_disk_read_log
 
 ; Jump to second stage
 jmp 0x1000
@@ -89,8 +134,61 @@ STACK_SEGMENT_POINTER equ 0x50
 SECOND_STAGE_POINTER equ 0x1000
 KERNEL_POINTER equ 0x8000
 
+STR_KERNEL: 
+    db "Kernel load ",0
+STR_SECOND_STAGE:
+    db "Second stage load ",0
+STR_STATUS:
+    db "status: ",0
+STR_LOCATION:
+    db "location: ",0
+
+STR_SEGMENT_REGISTERS:
+    db "Segment registers CS DS SS ES: ",0
+
+STR_VIDEO_MODE:
+    db "Video mode flag: ",0
+
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"
+%include "bios-prints.asm"
+
+; si - message
+print_disk_read_log:
+    push si
+    push ax
+
+    ; Print log
+    call print
+
+    mov si,STR_STATUS
+    call print
+
+    mov al,ah
+    xor ah,ah
+    call puthex
+
+    mov al,' '
+    call putch
+
+    mov si,STR_LOCATION
+    call print
+
+    mov ax,es
+    call puthex
+
+    mov al,':'
+    call putch
+
+    mov ax,bx
+    call puthex
+
+    call new_line
+
+    pop ax
+    pop si
+    ret
+
 
 times 510-($-$$) db 0
 dw 0xaa55
