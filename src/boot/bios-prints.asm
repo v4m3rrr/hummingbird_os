@@ -1,23 +1,81 @@
-;ax - num
-print_num:
+; ;ax - num
+; print_num:
+    ; push ax
+    ; push bx
+    ; push cx
+    ; push dx
+
+;     mov cx,10
+; print_num_loop:
+;     xor dx,dx
+;     ;dx r ax q
+;     div cx
+;     mov bx,ax
+;     mov ax,dx
+;     add ax,'0'
+;     call putch
+;     mov ax,bx
+;     test ax,ax
+;     jnz print_num_loop
+
+;     pop dx
+;     pop cx
+;     pop bx
+;     pop ax
+;     ret
+
+; ax - hex
+puthex:
     push ax
     push bx
     push cx
     push dx
+    push si
 
-    mov cx,10
-print_num_loop:
-    xor dx,dx
-    ;dx r ax q
-    div cx
-    mov bx,ax
-    mov ax,dx
-    add ax,'0'
+    push ax
+    mov al,'0'
     call putch
-    mov ax,bx
-    test ax,ax
-    jnz print_num_loop
+    mov al,'x'
+    call putch
+    pop ax
 
+    mov bl,al
+    mov al,ah
+    mov ah,bl
+
+    mov cl,al
+    shl al,4
+    shr cl,4
+    or al,cl
+
+    mov ch,ah
+    shl ah,4
+    shr ch,4
+    or ah,ch
+
+    mov cx,4
+puthex_loop:
+    xor dx,dx
+    mov bx,16
+    ;dx r ax q
+    div bx
+    
+    cmp dl,09h
+    jg puthex_hex
+
+    add dl,'0'
+    jmp puthex_continue
+puthex_hex:
+    add dl,'A'-10
+puthex_continue:
+    push ax
+    mov al,dl
+    call putch
+    pop ax
+
+    loop puthex_loop
+
+    pop si
     pop dx
     pop cx
     pop bx
