@@ -131,6 +131,31 @@ scroll_up:
     pop bx
     ret
 
+; bl - color
+new_line_color:
+    push ax
+    push bx
+    push cx
+    push dx
+    ;get cursor postion
+    mov ah,03h
+    mov bh,PAGE_NUMBER
+    int 0x10 ;dh-row,dl-col
+
+    ; print spaces
+    mov cx,SCREEN_WIDTH
+    sub cl,dl
+new_line_color_loop:
+    mov al,' '
+    call putch_color
+    loop new_line_color_loop
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
 
 ; Constants must be the same as in bios-prints
 PAGE_NUMBER equ 00h
