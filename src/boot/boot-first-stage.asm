@@ -53,6 +53,10 @@ mov ah,00h
 mov al,03h ; 80x25 16-color text Color
 int 10h
 
+mov si,STR_FIRST_STAGE_ENTERED
+call print
+call new_line
+
 mov si,STR_VIDEO_MODE
 call print
 
@@ -122,6 +126,10 @@ int 13h
 mov si,STR_KERNEL
 call print_disk_read_log
 
+mov si,STR_FIRST_STAGE_COMPLETE
+call print
+call new_line
+
 ; Jump to second stage
 jmp 0x1000
 
@@ -148,6 +156,10 @@ STR_SEGMENT_REGISTERS:
 
 STR_VIDEO_MODE:
     db "Video mode flag: ",0
+STR_FIRST_STAGE_COMPLETE:
+    db "First stage completed",0
+STR_FIRST_STAGE_ENTERED:
+    db "Entered first stage",0
 
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"

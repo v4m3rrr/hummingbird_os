@@ -156,6 +156,12 @@ new_line_color_loop:
     pop ax
     ret
 
+println_color:
+
+    call print_color
+    call new_line_color
+    ret
+
 
 ; Constants must be the same as in bios-prints
 PAGE_NUMBER equ 00h

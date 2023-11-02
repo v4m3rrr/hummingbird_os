@@ -7,10 +7,19 @@ OBJ_BOOT_DEPENDENCIES = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(BOOT_DEPENDENCIES
 all: os-image
 	qemu-system-i386 -drive format=raw,file=os-image
 
-os-image: obj/boot/boot.bin
+os-image: obj/boot/boot.bin obj/kernel/kernel.bin
 	cat $^ > $@
 
 $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/boot-second-stage.bin
 	cat $^ > $@
 $(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm $(BOOT_DEPENDENCIES)
-	nasm -I $(SRC_DIR)/boot -f bin $< -o $@ 
+	nasm -I $(SRC_DIR)/boot -f bin $< -o $@
+
+$(OBJ_DIR)/kernel/kernel.bin: $(OBJ_DIR)/kernel/entry-kernel.o $(OBJ_DIR)/kernel/kernel.o
+	ld -e 0x0 -Ttext 0x8000 -m elf_i386 $^ -o $@ --oformat binary
+
+$(OBJ_DIR)/kernel/entry-kernel.o: $(SRC_DIR)/kernel/entry-kernel.asm
+	nasm -f elf32 $^ -o $@
+
+$(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.c
+	gcc -ffreestanding -c -fno-pie -m32 $^ -o $@
