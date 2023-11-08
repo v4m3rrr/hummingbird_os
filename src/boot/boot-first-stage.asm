@@ -110,7 +110,7 @@ call print_disk_read_log
 
 ; Read kernel sectors into memory
 mov ah,02h                              ; read sectors to memory option
-mov al,0Ah                              ; amount of sectors to read
+mov al,20h                              ; amount of sectors to read
 mov ch,00h                              ; cylinder
 mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
 pop dx                                  ; get drive number (dl)

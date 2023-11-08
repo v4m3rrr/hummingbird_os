@@ -104,6 +104,19 @@ mov si,STR_GDT_ENTER
 mov bl,BIOS_LIGHT_GRAY
 call println_color
 
+mov si,STR_PRESS_ANY
+mov bl,BIOS_LIGHT_BLUE
+call print_color
+
+mov ah,00h
+int 16h
+
+mov al,00h
+mov bh,00h
+shl bh,4
+or bh,BIOS_WHITE
+call scroll_up
+
 cli
 lgdt [GDT_DESC]
 
@@ -158,6 +171,8 @@ STR_FAIL_A20:
     db "Failed to enable A20 gate. Abort",0
 STR_GDT_ENTER:
     db "Entering protected mode",0
+STR_PRESS_ANY:
+    db "Press any key to continue...",0
 
 times 512*SECOND_STAGE_SECTORS_NUM - 2 - ($-$$) db 0
 dw 0xdefa ;FADE
