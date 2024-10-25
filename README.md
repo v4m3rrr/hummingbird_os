@@ -1,19 +1,39 @@
 # Hummingbird Operating System
+
 ## About
+*(Include a brief description of the Hummingbird Operating System here.)*
+
 ## Requirements
-For host os Linux is recommened.
-Programs essential to compile project:
-- make (duh)
-- git (duh)
-- qemu-system-i386
-- gcc
-- nasm
-- ld
-- cat
+For the host OS, **Linux** is recommended.
+
+Programs essential to compile the project:
+- **make** (duh)
+- **git** (duh)
+- **qemu-system-i386**
+- **gcc**
+- **nasm**
+- **ld**
+- **cat**
+
 ## Installation
-### Step 1 Clone repository
-- Open command-line interface (e.g. Terminal)
-- Goto desired directory to clone project: `cd /path/to/my/directory`
-- Clone project: `git clone https://github.com/v4m3rrr/hummingbird_os.git`
-### Step 2 Run make
-- `make`
+
+### Step 1: Clone the repository
+1. Open a command-line interface (e.g., Terminal).
+2. Navigate to the desired directory to clone the project:
+   ```bash
+   cd /path/to/my/directory
+   ```
+
+3. Clone the project:  
+   ```bash
+   git clone https://github.com/v4m3rrr/hummingbird_os.git
+   ```
+### Step 2: Run make
+  - Navigate to the cloned directory:
+    ```bash
+    cd hummingbird_os
+    ```
+  - Run the following command:
+    ```bash
+    make
+    ```
