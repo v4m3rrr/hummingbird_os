@@ -1,2 +1,4 @@
-obj/
+obj/boot/*
+obj/kernel/*
+obj/drivers/*
 os-image
