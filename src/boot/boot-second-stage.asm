@@ -97,17 +97,50 @@ mov si,STR_A20_SUCCESS
 mov bl,BIOS_LIGHT_GRAY
 call println_color
 
-;;;;;;;;;;;;;;;;;;; Maybe move kernel loading here  ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Read kernel sectors into memory ;;;;;;;;;;;;;;;;;;;;;
+mov ah,02h                              ; read sectors to memory option
+mov al,20h                              ; amount of sectors to read
+mov ch,00h                              ; cylinder
+mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
+pop dx                                  ; get drive number (dl)
+mov dh,00h                              ; head number
 
-;;;;;;;;;;;;;;;;;;; Entering protected mode         ;;;;;;;;;;;;;;;;;;;;;
+; Location es:bx
+xor bx,bx
+mov es,bx
+mov bx,KERNEL_POINTER
+int 13h 
+
+; Print log
+mov si,STR_KERNEL
+call print_disk_read_log
+
+;;;;;;;;;;;;;;;;;;;          Disabling NMI          ;;;;;;;;;;;;;;;;;;;;;
+; Disabling is suggested by Intel Developers Manual
+in al,0x70 ; port 0x70 is CMOS/RTC clock by MSB is a toggle for NMI
+or al,0x80 ; 7th bit only set the rest clear
+out 0x70,al
+
+mov si,STR_NMI_DISABLED
+mov bl,BIOS_LIGHT_BLUE
+call println_color
+;;;;;;;;;;;;;;;;;;;        Disabling cursor         ;;;;;;;;;;;;;;;;;;;;;
+mov ah,01h
+mov ch,3Fh
+int 10h
+
+mov si,STR_CURSOR_DISABLED
+mov bl,BIOS_LIGHT_BLUE
+call println_color
+;;;;;;;;;;;;;;;;;;;   Wait for user to read logs    ;;;;;;;;;;;;;;;;;;;;;
 mov si,STR_GDT_ENTER
 mov bl,BIOS_LIGHT_GRAY
 call println_color
 
 mov si,STR_PRESS_ANY
-mov bl,BIOS_LIGHT_BLUE
+mov bl,BIOS_GREEN
 call print_color
-
+;;;;;;;;;;;;;;;;;;;           Clear screen          ;;;;;;;;;;;;;;;;;;;;;
 mov ah,00h
 int 16h
 
@@ -116,7 +149,7 @@ mov bh,00h
 shl bh,4
 or bh,BIOS_WHITE
 call scroll_up
-
+;;;;;;;;;;;;;;;;;;;     Entering protected mode     ;;;;;;;;;;;;;;;;;;;;;
 cli
 lgdt [GDT_DESC]
 
@@ -131,8 +164,18 @@ jmp CODE_SEG:INIT_PM
 cli
 hlt
 
+KERNEL_POINTER equ 0x8000
+
+STR_KERNEL:
+    db "Kernel load ",0
+STR_NMI_DISABLED:
+    db "Non-maskable interrupt disabled",0
+STR_CURSOR_DISABLED:
+    db "Cursor disabled",0
+
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"
+%include "bios-prints.asm"
 %include "bios-prints-color.asm"
 %include "bios-colors.asm"
 %include "A20-enablers.asm"

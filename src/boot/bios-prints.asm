@@ -144,6 +144,42 @@ new_line_loop:
     pop ax
     ret
 
+; si - message
+print_disk_read_log:
+    push si
+    push ax
+
+    ; Print log
+    call print
+
+    mov si,STR_STATUS
+    call print
+
+    mov al,ah
+    xor ah,ah
+    call puthex
+
+    mov al,' '
+    call putch
+
+    mov si,STR_LOCATION
+    call print
+
+    mov ax,es
+    call puthex
+
+    mov al,':'
+    call putch
+
+    mov ax,bx
+    call puthex
+
+    call new_line
+
+    pop ax
+    pop si
+    ret
+
 ; Constants must be the same as in bios-prints-color
 PAGE_NUMBER equ 00h
 SCREEN_WIDTH equ 80

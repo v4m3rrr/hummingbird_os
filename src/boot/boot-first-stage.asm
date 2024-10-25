@@ -4,9 +4,16 @@
 ; Usable memory for the first MiB
 ; Some bioses or emulators can already set A20-Gate but the layout
 ; remains the same (atleast for 1 MiB)
+; 0x00000000- 0x000003FF - interrupt vector table 1 KiB
+; 0x00000400- 0x000004FF - BIOS data area 256 bytes 
 ; 0x00000500- 0x00007BFF - free memory 29.75 KiB
 ; 0x00007c00- 0x00007DFF - os code 512 bytes
-; 0x00007E00-0x0007FFFF - free memory 480.5 KiB
+; 0x00007E00- 0x0007FFFF - free memory 480.5 KiB
+; 0x00080000- 0x0009FFFF - Extended BIOS data area 128 KiB
+; 0x000A0000- 0x000BFFFF - Video memory 128 KiB
+; 0x000C0000- 0x000C7FFF - Video BIOS 32 KiB
+; 0x000C8000- 0x000EFFFF - BIOS Expansions 160 KiB
+; 0x000F0000- 0x000FFFFF - Motherboard BIOS 64 KiB
 
 ; Set up segment register
 ; Turn of interrupts to not mess up
@@ -17,7 +24,7 @@ cli
 ; it can be addressed via 0x0000:0x7c00 or 0x07c0:0x0 which results to the same address
 ; we want to make sure that it is the first option
 
-; check if it is zero cs
+; check if cs is zero
 mov ax,cs
 test ax,ax
 jz segment_register_setup_continue
@@ -51,6 +58,17 @@ push dx
 ; Seting up mode clears the screen
 mov ah,00h
 mov al,03h ; 80x25 16-color text Color
+int 10h
+
+; Making sure that cursor is enabled and changing shape to full box
+mov ah,01h
+mov ch,00h
+mov cl,0Fh
+int 10h
+
+; Making sure that correct page number is chosen
+mov ah,05h
+mov al,PAGE_NUMBER
 int 10h
 
 mov si,STR_FIRST_STAGE_ENTERED
@@ -88,6 +106,11 @@ call puthex
 
 call new_line
 
+; Check memory size
+int 12h ; program occupies 1KiB block of memory hence 639 blocks
+call puthex
+call new_line
+
 ; Read second stage sectors into memory
 mov ah,02h                      ; read sectors to memory option
 mov al,SECOND_STAGE_SECTORS_NUM ; amount of sectors to read
@@ -102,28 +125,10 @@ mov es,bx
 mov bx,SECOND_STAGE_POINTER
 int 13h
 
-push dx
+push dx ; For reading kernel secotors in second stage
 
 ; Print log
 mov si,STR_SECOND_STAGE
-call print_disk_read_log
-
-; Read kernel sectors into memory
-mov ah,02h                              ; read sectors to memory option
-mov al,20h                              ; amount of sectors to read
-mov ch,00h                              ; cylinder
-mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
-pop dx                                  ; get drive number (dl)
-mov dh,00h                              ; head number
-
-; Location es:bx
-xor bx,bx
-mov es,bx
-mov bx,KERNEL_POINTER
-int 13h
-
-; Print log
-mov si,STR_KERNEL
 call print_disk_read_log
 
 mov si,STR_FIRST_STAGE_COMPLETE
@@ -131,7 +136,7 @@ call print
 call new_line
 
 ; Jump to second stage
-jmp 0x1000
+jmp SECOND_STAGE_POINTER
 
 cli
 hlt
@@ -140,19 +145,11 @@ BASE_STACK_POINTER equ 0x400 ; 1024 bytes (1KiB) of stack
 STACK_SEGMENT_POINTER equ 0x50 
 
 SECOND_STAGE_POINTER equ 0x1000
-KERNEL_POINTER equ 0x8000
 
-STR_KERNEL: 
-    db "Kernel load ",0
 STR_SECOND_STAGE:
     db "Second stage load ",0
-STR_STATUS:
-    db "status: ",0
-STR_LOCATION:
-    db "location: ",0
-
 STR_SEGMENT_REGISTERS:
-    db "Segment registers CS DS SS ES: ",0
+    db "Seg reg CS DS SS ES: ",0
 
 STR_VIDEO_MODE:
     db "Video mode flag: ",0
@@ -164,43 +161,6 @@ STR_FIRST_STAGE_ENTERED:
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"
 %include "bios-prints.asm"
-
-; si - message
-print_disk_read_log:
-    push si
-    push ax
-
-    ; Print log
-    call print
-
-    mov si,STR_STATUS
-    call print
-
-    mov al,ah
-    xor ah,ah
-    call puthex
-
-    mov al,' '
-    call putch
-
-    mov si,STR_LOCATION
-    call print
-
-    mov ax,es
-    call puthex
-
-    mov al,':'
-    call putch
-
-    mov ax,bx
-    call puthex
-
-    call new_line
-
-    pop ax
-    pop si
-    ret
-
 
 times 510-($-$$) db 0
 dw 0xaa55
