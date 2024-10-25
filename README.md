@@ -15,11 +15,5 @@ Programs essential to compile project:
 - Open command-line interface (e.g. Terminal)
 - Goto desired directory to clone project: `cd /path/to/my/directory`
 - Clone project: `git clone https://github.com/v4m3rrr/hummingbird_os.git`
-### Step 2 Create obj directories
-- Navigate to repo directory `cd hummingbird_os`
-- Create `obj` directories
-  - `mkdir -p obj/boot`
-  - `mkdir -p obj/kernel`
-  - `mkdir -p obj/drivers`
-### Step 3 Run make
+### Step 2 Run make
 - `make`
