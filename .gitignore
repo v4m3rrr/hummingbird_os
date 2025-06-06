@@ -1,7 +1,2 @@
-obj/boot/*
-obj/kernel/*
-obj/drivers/*
-!obj/boot/.gitkeep
-!obj/kernel/.gitkeep
-!obj/drivers/.gitkeep
+obj
 os-image
