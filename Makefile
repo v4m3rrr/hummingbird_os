@@ -1,3 +1,10 @@
+VERBOSE ?= 0
+ifeq ($(VERBOSE),1)
+  Q :=
+else
+  Q := @
+endif
+
 SRC_DIR=src
 OBJ_DIR=obj
 
@@ -15,28 +22,31 @@ OBJ_DRIVERS_DEPENDENCIES = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(DRIVERS_DEPEND
 DRIVERS_HEADERS = $(wildcard $(SRC_DIR)/drivers/*.h)
 
 all: os-image
-	qemu-system-i386 -drive format=raw,file=os-image
+	$(Q)qemu-system-i386 -drive format=raw,file=os-image
 
 os-image: obj/boot/boot.bin obj/kernel/kernel.bin | $(OBJ_DIR)
-	cat $^ > $@
+	$(Q)cat $^ > $@
 
 $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/boot-second-stage.bin
-	cat $^ > $@
+	$(Q)cat $^ > $@
 
 $(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm $(BOOT_DEPENDENCIES) | $(OBJ_DIR)/boot
-	nasm -I $(SRC_DIR)/boot -f bin $< -o $@
+	$(Q)nasm -I $(SRC_DIR)/boot -f bin $< -o $@
 
 $(OBJ_DIR)/kernel/kernel.bin: $(OBJ_DIR)/kernel/entry-kernel.o $(OBJ_KERNEL_DEPENDENCIES) $(OBJ_DRIVERS_DEPENDENCIES)
-	ld -e 0x0 -Ttext 0x8000 -m elf_i386 $^ -o $@ --oformat binary
+	$(Q)ld -e 0x0 -Ttext 0x8000 -m elf_i386 $^ -o $@ --oformat binary
 
 $(OBJ_DIR)/kernel/entry-kernel.o: $(SRC_DIR)/kernel/entry-kernel.asm | $(OBJ_DIR)/kernel
-	nasm -f elf32 $^ -o $@
+	$(Q)nasm -f elf32 $^ -o $@
 
 $(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.c $(KERNEL_HEADERS) $(DRIVERS_HEADERS) | $(OBJ_DIR)/kernel
-	gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
+	$(Q)gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
 
 $(OBJ_DIR)/drivers/%.o: $(SRC_DIR)/drivers/%.c $(KERNEL_HEADERS) $(DRIVERS_HEADERS) | $(OBJ_DIR)/drivers
-	gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
+	$(Q)gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
 
 $(DIRS):
-	mkdir -p $@
+	$(Q)mkdir -p $@
+
+clean:
+	$(Q)rm -rf obj os-image
