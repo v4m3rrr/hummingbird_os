@@ -4,7 +4,7 @@
 *(Include a brief description of the Hummingbird Operating System here.)*
 
 ## Requirements
-For the host OS, **Linux** is recommended.
+As it is today, **Linux** is required host OS.
 
 Programs essential to compile the project:
 - **make** (duh)
