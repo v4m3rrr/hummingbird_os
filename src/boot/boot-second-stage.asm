@@ -146,9 +146,9 @@ int 16h
 
 mov al,00h
 mov bh,00h
-shl bh,4
 or bh,BIOS_WHITE
 call scroll_up
+
 ;;;;;;;;;;;;;;;;;;;     Entering protected mode     ;;;;;;;;;;;;;;;;;;;;;
 cli
 lgdt [GDT_DESC]
@@ -218,4 +218,4 @@ STR_PRESS_ANY:
     db "Press any key to continue...",0
 
 times 512*SECOND_STAGE_SECTORS_NUM - 2 - ($-$$) db 0
-dw 0xdefa ;FADE
+dw 0xdefa ;FADE it just me it is not necessary

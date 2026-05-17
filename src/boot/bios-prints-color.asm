@@ -112,19 +112,6 @@ scroll_up:
     mov dl,SCREEN_WIDTH
     int 10h
 
-    ; Get cursor position
-    mov ah,03h
-    mov bh,PAGE_NUMBER
-    int 10h
-
-    pop ax
-    push ax
-
-    mov ah,02h
-    mov bh,PAGE_NUMBER
-    sub dh,al
-    int 10h
-
     pop ax
     pop dx
     pop cx

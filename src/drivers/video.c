@@ -9,7 +9,6 @@ void putch(uint8_t c){
 
 void print(const char* str){
     while(*str!=0){
-        *VIDEO_POINTER++=*str++;
-        *VIDEO_POINTER++=0x0a;
+        putch(*str++);
     }
 }

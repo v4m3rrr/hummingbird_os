@@ -3,7 +3,7 @@
 
 ; Usable memory for the first MiB
 ; Some bioses or emulators can already set A20-Gate but the layout
-; remains the same (atleast for 1 MiB)
+; remains the same (at least for first 1 MiB)
 ; 0x00000000- 0x000003FF - interrupt vector table 1 KiB
 ; 0x00000400- 0x000004FF - BIOS data area 256 bytes 
 ; 0x00000500- 0x00007BFF - free memory 29.75 KiB
@@ -43,10 +43,10 @@ mov ds,ax
 mov ax,STACK_SEGMENT_POINTER
 mov ss,ax
 mov sp,BASE_STACK_POINTER
+mov bp,sp
 
 ; Extended segment register
-xor ax,ax
-mov es,ax
+; Dont care about him
 
 ; Turn interrupts back on
 sti
@@ -107,7 +107,26 @@ call puthex
 call new_line
 
 ; Check memory size
-int 12h ; program occupies 1KiB block of memory hence 639 blocks
+;Interrupt 12H - Memory Size Determination
+;This routine returns the amount of RAM up to 640Kb in the system as
+;determined by the POST, minus the memory allocated to the
+;Extended BIOS Data Area. (ref IBM Bios technical refrence)
+int 12h
+call puthex
+call new_line
+
+; It returns segment adress so we must treat like
+; in segement addressing
+mov ah,0C1h
+int 15h
+mov ax,es
+call puthex
+call new_line
+
+; Check if it is 1KiB
+xor ax,ax
+xor bx,bx
+mov al,es:[bx]
 call puthex
 call new_line
 
@@ -125,7 +144,7 @@ mov es,bx
 mov bx,SECOND_STAGE_POINTER
 int 13h
 
-push dx ; For reading kernel secotors in second stage
+push dx ; For reading kernel sectors in second stage
 
 ; Print log
 mov si,STR_SECOND_STAGE
@@ -147,16 +166,16 @@ STACK_SEGMENT_POINTER equ 0x50
 SECOND_STAGE_POINTER equ 0x1000
 
 STR_SECOND_STAGE:
-    db "Second stage load ",0
+    db "Sec stg load ",0 ; Second stage load
 STR_SEGMENT_REGISTERS:
-    db "Seg reg CS DS SS ES: ",0
+    db "Seg reg CS DS SS ES: ",0 ; Segment registers
 
 STR_VIDEO_MODE:
-    db "Video mode flag: ",0
+    db "Video mode: ",0 ; Video mode flag
 STR_FIRST_STAGE_COMPLETE:
-    db "First stage completed",0
+    db "First stg comp",0 ; First stage completed
 STR_FIRST_STAGE_ENTERED:
-    db "Entered first stage",0
+    db "Ent first stg",0 ; Entered first stage
 
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"

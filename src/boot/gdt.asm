@@ -15,8 +15,8 @@ GDT_START:
                 ;2 DC: Direction bit:
                 ; For data sel 0 seg grows up, 1 seg grows down has to
                 ; be changed offset has to be greater than limit
-                ; For code sel: 0 code can be run from DPL ring
-                ; 1 code can be run from equal or lower PL
+                ; For code sel: 0 code can be run only form the same DPL ring
+                ; 1 code can be run from equal or lower DPL
                 ;1 RW: Readable/Wriatable bit:
                 ; For code seg Readable - 0 read access for this seg not
                 ; allowed, 1 allowed. Write access is never allowed for
@@ -30,7 +30,7 @@ GDT_START:
                 ;is set to 0, the CPU trying to set this bit will 
                 ;trigger a page fault. Best left set to 1 unless 
                 ;otherwise needed. 
-                db 0b11001111 ; 4 right bits is last bits of 20 bit limit
+                db 0b01001111 ; 4 right bits is last bits of 20 bit limit
                 ; left most bits are flags (from left):
                 ;3 G: Granularity flag: indicades wheter limit graduialty
                 ; is in 4KiB pages 1, or in bytes 0
@@ -46,7 +46,7 @@ GDT_START:
                 dw 0x0 
                 db 0x0 
                 db 0b10010011
-                db 0b11001111
+                db 0b01001111
                 db 0x0 
 GDT_END:
 
