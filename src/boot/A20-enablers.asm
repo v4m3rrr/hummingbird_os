@@ -1,3 +1,5 @@
+bits 16
+
 A20_bios:
     push ax
     
@@ -59,7 +61,7 @@ kc_8042:
     ; write the actual data to write to output port
     call c_wr_8042
     pop ax
-    xor al,0x2 ;A20 Gate set
+    or al,0x2 ;A20 Gate set
     out 0x60,al
 
     ;enable keyboard port back
@@ -86,52 +88,55 @@ c_rd_8042:
     ret
 
 
-
+; Checks whether A20 Line is enabled via chceking change on the same
+; address of memory if 0x0000:0x7DFE and 0xFFFF:0x7E0E 
+; ( the same address if is only 1MiB)
+; Returns ax=0 A20 disabled, ax=1 A20 enabled
 check_A20:
+    pushf
     push es
     push ds
+    push si
+    push di
 
     cli
 
     xor ax,ax
-    mov es,ax
-    mov di,0x0500
-
-    ;on A20 disable address 0xFFFF0+0x0510 results to 0x0500
+    mov ds,ax ; 0X00000
     not ax
-    mov ds,ax
-    mov si,0x0510
+    mov es,ax ; 0xFFFF0
 
-    ; save it for restoring what was in MEMORY
-    mov al,[es:di]
+    mov si,0x7DFE ; location of magic number
+    mov di,0x7E0E ; location of magic number if it wraps ( es:di )
+
+    mov al, byte [ds:si] ; same as below
     push ax
 
-    ; save it for restoring what was in MEMORY
-    mov al,[ds:si]
+    mov al, byte [es:di] ; we save magic number so that we can restore what was there
     push ax
 
-    ;write bytes to memory
-    mov byte [es:di],0x00
-    mov byte [ds:si],0xff
+    ; now we change the values there and see if they are the same
+    mov byte [ds:si],0x00
+    mov byte [es:di],0xFF
 
-    ;if locations are the same we should see
-    ;on 0x00000+0x0500 value 0xff meaning A20 disabled
-    cmp byte [es:di],0xff
+    ; if the value is the same then A20 line is not enabled
+    cmp byte [ds:si],0xFF
 
-    mov ax,0 ; wrapped memory
+    pop ax
+    mov byte [es:di],al
+
+    pop ax
+    mov byte [ds:si],al
+
+    mov ax,0
     je check_A20_exit
 
-    mov ax,1 ; A20 enabled
+    mov ax,1
 check_A20_exit:
-    ;restore what was in MEMORY
-    pop dx
-    mov [ds:si],dl
-
-    ;restore what was in MEMORY
-    pop dx
-    mov [es:di],dl
-
+    pop di
+    pop si
     pop ds
     pop es
-    sti
+    popf
+    
     ret
