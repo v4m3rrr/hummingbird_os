@@ -9,7 +9,7 @@
 ; 0x00000500- 0x00007BFF - free memory 29.75 KiB
 ; 0x00007c00- 0x00007DFF - os code 512 bytes
 ; 0x00007E00- 0x0007FFFF - free memory 480.5 KiB
-; 0x00080000- 0x0009FFFF - Extended BIOS data area 128 KiB
+; 0x00080000- 0x0009FFFF - Extended BIOS data area 128 KiB at most
 ; 0x000A0000- 0x000BFFFF - Video memory 128 KiB
 ; 0x000C0000- 0x000C7FFF - Video BIOS 32 KiB
 ; 0x000C8000- 0x000EFFFF - BIOS Expansions 160 KiB
@@ -23,19 +23,13 @@ cli
 ; The code is always loaded to absolute address 0x7c00 by BIOS but
 ; it can be addressed via 0x0000:0x7c00 or 0x07c0:0x0 which results to the same address
 ; we want to make sure that it is the first option
-
-; check if cs is zero
-mov ax,cs
-test ax,ax
-jz segment_register_setup_continue
-
-; so cs is 0x7c0
-; far jump to change code segment register
 ; the org tells that offset in current segment is 0x7c00 so we dont need to add
 jmp 0x0:segment_register_setup_continue ;+0x7c00
 
 segment_register_setup_continue:
 xor ax,ax
+; Extended segment register
+mov es,ax
 ; Data segment register
 mov ds,ax
 
@@ -44,9 +38,6 @@ mov ax,STACK_SEGMENT_POINTER
 mov ss,ax
 mov sp,BASE_STACK_POINTER
 mov bp,sp
-
-; Extended segment register
-; Dont care about him
 
 ; Turn interrupts back on
 sti
@@ -130,6 +121,7 @@ mov al,es:[bx]
 call puthex
 call new_line
 
+read_from_disk:
 ; Read second stage sectors into memory
 mov ah,02h                      ; read sectors to memory option
 mov al,SECOND_STAGE_SECTORS_NUM ; amount of sectors to read
@@ -143,6 +135,9 @@ xor bx,bx
 mov es,bx
 mov bx,SECOND_STAGE_POINTER
 int 13h
+
+; Apparently read can fail, so we try infinitly
+jc read_from_disk
 
 push dx ; For reading kernel sectors in second stage
 
