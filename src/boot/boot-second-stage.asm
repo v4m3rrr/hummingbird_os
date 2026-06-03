@@ -104,6 +104,7 @@ mov ch,00h                              ; cylinder
 mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
 pop dx                                  ; get drive number (dl)
 mov dh,00h                              ; head number
+;; TODO if think dx should be pushed back
 
 ; Location es:bx
 xor bx,bx

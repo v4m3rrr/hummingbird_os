@@ -48,13 +48,13 @@ push dx
 ; Setup video mode
 ; Seting up mode clears the screen
 mov ah,00h
-mov al,03h ; 80x25 16-color text Color
+mov al,03h ; 16-color text Color size depends
 int 10h
 
 ; Making sure that cursor is enabled and changing shape to full box
 mov ah,01h
-mov ch,00h
-mov cl,0Fh
+mov ch,00h ; blink mode is not reliable
+mov cl,1Fh ; the ensure it will be full rectangle on all gfx adapters
 int 10h
 
 ; Making sure that correct page number is chosen
@@ -70,6 +70,7 @@ mov si,STR_VIDEO_MODE
 call print
 
 call puthex
+
 call new_line
 
 ; Print segment registers log
@@ -102,24 +103,25 @@ call new_line
 ;This routine returns the amount of RAM up to 640Kb in the system as
 ;determined by the POST, minus the memory allocated to the
 ;Extended BIOS Data Area. (ref IBM Bios technical refrence)
-int 12h
-call puthex
-call new_line
+;int 12h TODO move this to second stage
+;call puthex
+;call new_line
 
 ; It returns segment adress so we must treat like
 ; in segement addressing
-mov ah,0C1h
-int 15h
-mov ax,es
-call puthex
-call new_line
-
-; Check if it is 1KiB
-xor ax,ax
-xor bx,bx
-mov al,es:[bx]
-call puthex
-call new_line
+;TODO move this to second stage
+;mov ah,0C1h
+;int 15h
+;mov ax,es
+;call puthex
+;call new_line
+;
+;; Check if it is 1KiB
+;xor ax,ax
+;xor bx,bx
+;mov al,es:[bx]
+;call puthex
+;call new_line
 
 read_from_disk:
 ; Read second stage sectors into memory
@@ -136,18 +138,18 @@ mov es,bx
 mov bx,SECOND_STAGE_POINTER
 int 13h
 
+push dx ; For reading kernel sectors in second stage
+
 ; Apparently read can fail, so we try infinitly
 jc read_from_disk
-
-push dx ; For reading kernel sectors in second stage
 
 ; Print log
 mov si,STR_SECOND_STAGE
 call print_disk_read_log
 
-mov si,STR_FIRST_STAGE_COMPLETE
-call print
-call new_line
+; wait for input
+mov ah,00h
+int 16h
 
 ; Jump to second stage
 jmp SECOND_STAGE_POINTER
@@ -160,17 +162,15 @@ STACK_SEGMENT_POINTER equ 0x50
 
 SECOND_STAGE_POINTER equ 0x1000
 
+STR_VIDEO_MODE:
+    db "Vid mode:",0
 STR_SECOND_STAGE:
     db "Sec stg load ",0 ; Second stage load
 STR_SEGMENT_REGISTERS:
     db "Seg reg CS DS SS ES: ",0 ; Segment registers
 
-STR_VIDEO_MODE:
-    db "Video mode: ",0 ; Video mode flag
-STR_FIRST_STAGE_COMPLETE:
-    db "First stg comp",0 ; First stage completed
 STR_FIRST_STAGE_ENTERED:
-    db "Ent first stg",0 ; Entered first stage
+    db "Ent 1st stg",0 ; Entered first stage
 
 ; SECOND_STAGE_SECTORS_NUM
 %include "boot-stage-shared-constants.asm"
