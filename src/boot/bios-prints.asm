@@ -1,29 +1,3 @@
-; ;ax - num
-; print_num:
-    ; push ax
-    ; push bx
-    ; push cx
-    ; push dx
-
-;     mov cx,10
-; print_num_loop:
-;     xor dx,dx
-;     ;dx r ax q
-;     div cx
-;     mov bx,ax
-;     mov ax,dx
-;     add ax,'0'
-;     call putch
-;     mov ax,bx
-;     test ax,ax
-;     jnz print_num_loop
-
-;     pop dx
-;     pop cx
-;     pop bx
-;     pop ax
-;     ret
-
 ; ax - hex
 puthex:
     push ax
@@ -96,7 +70,6 @@ print_loop:
     jmp print_loop
 
 print_exit:
-
     pop si
     pop ax
     ret
@@ -180,7 +153,11 @@ print_disk_read_log:
     pop si
     ret
 
-; Constants must be the same as in bios-prints-color
 PAGE_NUMBER equ 00h
 SCREEN_WIDTH equ 80
-SCREEN_HEIGHT equ 25
+GRAPHICS_MODE equ 02h ; 80x25 characters
+
+STR_STATUS:
+  db "status: ",0
+STR_LOCATION:
+  db "location: ",0
