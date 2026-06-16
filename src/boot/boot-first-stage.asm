@@ -25,10 +25,6 @@ int 13h
 ; Apparently read can fail, so we try infinitly
 jc read_from_disk
 
-; wait for input
-mov ah,00h
-int 16h
-
 ; Jump to second stage
 jmp SECOND_STAGE_ADDRESS
 

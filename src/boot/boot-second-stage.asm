@@ -40,7 +40,7 @@ mov fs,bx
 ;;;;;;;;;;;;;; Graphics mode setup ;;;;;;;;;;
 
 xor ah,ah
-mov al,GRAPHICS_MODE
+mov al,GRAPHICS_MODE; defined in bios-prints.asm
 int 10h
 
 ; Making sure that cursor is enabled and changing shape to full box
@@ -105,20 +105,43 @@ A20_SUCCESS:
 mov si,STR_A20_SUCCESS
 call println
 
+jmp read_kernel_from_disk
+
 ;;;;;;;;;;;;;;;;;;; Read kernel sectors into memory ;;;;;;;;;;;;;;;;;;;;;
+print_disk_status:
+mov ah,01h
+pop dx
+int 13h
+
+mov si,STR_LAST_DISK_STATUS
+call print
+
+mov al,ah
+xor ah,ah
+call puthex
+
+call new_line
+
+push dx
+
+mov ah,00h
+int 16h
+read_kernel_from_disk:
 mov ah,02h                              ; read sectors to memory option
-mov al,KERNEL_SECTORS_NUM                              ; amount of sectors to read
+mov al,KERNEL_SECTORS_NUM               ; amount of sectors to read
 mov ch,00h                              ; cylinder
 mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
 pop dx                                  ; get drive number (dl)
 mov dh,00h                              ; head number
-;; TODO if think dx should be pushed back
 
 ; Location es:bx
 xor bx,bx
 mov es,bx
 mov bx,KERNEL_POINTER
 int 13h 
+
+push dx
+jc print_disk_status
 
 ; Print log
 mov si,STR_KERNEL
@@ -158,7 +181,7 @@ or eax,0x1
 mov cr0,eax
 
 ; Last init stage
-jmp CODE_SEG:INIT_PM
+jmp KERNEL_CODE_SEG:INIT_PM
 
 cli
 hlt
@@ -182,6 +205,8 @@ STR_FAIL_A20:
     db "Failed to enable A20 gate. Abort",0
 STR_GDT_ENTER:
     db "Entering protected mode. Press any key to continue...",0
+STR_LAST_DISK_STATUS:
+    db "Status of last disk operation: ",0
 
 %include "bios-prints.asm"
 %include "A20-enablers.asm"
@@ -189,7 +214,7 @@ STR_GDT_ENTER:
 
 [bits 32]
 INIT_PM:
-	mov eax,DATA_SEG
+	mov eax,KERNEL_DATA_SEG
 	mov ds,eax
 	mov ss,eax
 	mov es,eax
