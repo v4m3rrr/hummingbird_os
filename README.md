@@ -1,14 +1,14 @@
 # Hummingbird Operating System
 
 ## About
-*(Include a brief description of the Hummingbird Operating System here.)*
+
 
 ## Requirements
 As it is today, **Linux** is required host OS.
 
 Programs essential to compile the project:
-- **make** (duh)
-- **git** (duh)
+- **make**
+- **git**
 - **qemu-system-i386**
 - **gcc**
 - **nasm**
@@ -18,8 +18,8 @@ Programs essential to compile the project:
 ## Installation
 
 ### Step 1: Clone the repository
-1. Open a command-line interface (e.g., Terminal).
-2. Navigate to the desired directory to clone the project:
+1. Open a command-line interface.
+2. Navigate to the directory to clone the project:
    ```bash
    cd /path/to/my/directory
    ```
