@@ -25,7 +25,9 @@ all: os-image
 	$(Q)qemu-system-i386 -drive format=raw,file=os-image
 
 os-image: obj/boot/boot.bin obj/kernel/kernel.bin | $(OBJ_DIR)
-	$(Q)cat $^ > $@
+	$(Q)dd if=/dev/zero of=$@ bs=512 count=37
+	$(Q)dd if=$< of=$@ bs=512 conv=notrunc
+	$(Q)dd if=$(word 2,$^) of=$@ bs=512 conv=notrunc seek=5 # first stage plus second stage
 
 $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/boot-second-stage.bin
 	$(Q)cat $^ > $@
