@@ -5,6 +5,8 @@ else
   Q := @
 endif
 
+CFLAGS:=-ffreestanding -g -c -fno-pie -m32 -MMD -MP
+
 SRC_DIR=src
 OBJ_DIR=obj
 
@@ -22,6 +24,8 @@ OBJ_DRIVERS_DEPENDENCIES = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(DRIVERS_DEPEND
 DRIVERS_HEADERS = $(wildcard $(SRC_DIR)/drivers/*.h)
 
 all: os-image
+
+run: os-image
 	$(Q)qemu-system-i386 -drive format=raw,file=os-image -enable-kvm
 
 os-image: obj/boot/boot.bin obj/kernel/kernel.bin | $(OBJ_DIR)
@@ -41,14 +45,21 @@ $(OBJ_DIR)/kernel/kernel.bin: $(OBJ_DIR)/kernel/entry-kernel.o $(OBJ_KERNEL_DEPE
 $(OBJ_DIR)/kernel/entry-kernel.o: $(SRC_DIR)/kernel/entry-kernel.asm | $(OBJ_DIR)/kernel
 	$(Q)nasm -f elf32 $^ -o $@
 
-$(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.c $(KERNEL_HEADERS) $(DRIVERS_HEADERS) | $(OBJ_DIR)/kernel
-	$(Q)gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
+$(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.c | $(OBJ_DIR)/kernel
+	$(Q)gcc $(CFLAGS) $< -o $@
 
-$(OBJ_DIR)/drivers/%.o: $(SRC_DIR)/drivers/%.c $(KERNEL_HEADERS) $(DRIVERS_HEADERS) | $(OBJ_DIR)/drivers
-	$(Q)gcc -ffreestanding -g -c -fno-pie -m32 $< -Isrc/kernel -Isrc/drivers -o $@
+$(OBJ_DIR)/drivers/%.o: $(SRC_DIR)/drivers/%.c | $(OBJ_DIR)/drivers
+	$(Q)gcc $(CFLAGS) $< -o $@
+
+# these somehow automatically includes header files
+-include $(OBJ_KERNEL_DEPENDENCIES:.o=.d)
+-include $(OBJ_DRIVERS_DEPENDENCIES:.o=.d)
 
 $(DIRS):
 	$(Q)mkdir -p $@
 
 clean:
 	$(Q)rm -rf obj os-image
+
+.PHONY: clean all run
+
