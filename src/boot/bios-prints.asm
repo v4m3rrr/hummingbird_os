@@ -6,12 +6,12 @@ puthex:
     push dx
     push si
 
-    push ax
-    mov al,'0'
-    call putch
-    mov al,'x'
-    call putch
-    pop ax
+    ;push ax
+    ;mov al,'0'
+    ;call putch
+    ;mov al,'x'
+    ;call putch
+    ;pop ax
 
     mov bl,al
     mov al,ah
@@ -55,6 +55,21 @@ puthex_continue:
     pop bx
     pop ax
     ret
+
+; eax-number
+puthex_64:
+  push eax
+  push ebx
+
+  mov ebx, eax
+  shr eax,16
+  call puthex
+  mov eax,ebx
+  call puthex
+  
+  pop ebx
+  pop eax
+  ret
 
 ;si-pointer to string
 print:
@@ -153,9 +168,11 @@ print_disk_read_log:
     pop si
     ret
 
+; chaning any of those values might need change in all of them
 PAGE_NUMBER equ 00h
-SCREEN_WIDTH equ 80
-GRAPHICS_MODE equ 02h ; 80x25 characters
+SCREEN_WIDTH equ 80 
+SCREEN_HEIGHT equ 25
+GRAPHICS_MODE equ 03h ; 80x25 characters
 
 STR_STATUS:
   db "status: ",0
