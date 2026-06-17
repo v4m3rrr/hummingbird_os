@@ -171,8 +171,7 @@ print_disk_read_log:
 ; chaning any of those values might need change in all of them
 PAGE_NUMBER equ 00h
 SCREEN_WIDTH equ 80 
-SCREEN_HEIGHT equ 25
-GRAPHICS_MODE equ 03h ; 80x25 characters
+GRAPHICS_MODE equ 03h ; 80x25 characters ;it not guaranteed
 
 STR_STATUS:
   db "status: ",0

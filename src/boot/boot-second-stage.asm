@@ -86,6 +86,8 @@ call new_line
 mov ebx,0x0
 mov di,MEMORY_MAP_ADDRESS
 loop_smap:
+
+; smap memory mapping 
 mov eax,0xE820
 mov edx,0x534D4150 ;('SMAP')
 mov ecx,24
@@ -121,13 +123,14 @@ jnz loop_smap
 
 jmp read_kernel_from_disk
 smap_error:
-  mov si,STR_SMAP_ERROR
-  call println
+mov si,STR_SMAP_ERROR
+call println
 
-  cli
-  hlt
+cli
+hlt
 ;;;;;;;;;;;;;;;;;;; Read kernel sectors into memory ;;;;;;;;;;;;;;;;;;;;;
 print_disk_status:
+;get disk status
 mov ah,01h
 mov dl,[ds:DISK_NUMBER_POINTER]
 int 13h
@@ -143,6 +146,11 @@ call new_line
 
 mov ah,00h
 int 16h
+
+; reset disk
+mov ah, 00h
+mov dl,[ds:DISK_NUMBER_POINTER]
+int 13h
 read_kernel_from_disk:
 mov ah,02h                              ; read sectors to memory option
 mov al,KERNEL_SECTORS_NUM               ; amount of sectors to read
@@ -175,10 +183,12 @@ out 0x70,al
 mov si,STR_GDT_ENTER
 call print
 
+; waits for keysroke
 mov ah,00h
 int 16h
 ;;;;;;;;;;;;;;;;;;;           Clear screen          ;;;;;;;;;;;;;;;;;;;;;
 
+; sets video mode which also clears screen if ah is clear
 xor ah,ah
 mov al,GRAPHICS_MODE
 int 10h
