@@ -22,10 +22,12 @@ OBJ_DRIVERS_DEPENDENCIES = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(DRIVERS_DEPEND
 DRIVERS_HEADERS = $(wildcard $(SRC_DIR)/drivers/*.h)
 
 all: os-image
-	$(Q)qemu-system-i386 -drive format=raw,file=os-image
+	$(Q)qemu-system-i386 -drive format=raw,file=os-image -enable-kvm
 
 os-image: obj/boot/boot.bin obj/kernel/kernel.bin | $(OBJ_DIR)
-	$(Q)cat $^ > $@
+	$(Q)dd if=/dev/zero of=$@ bs=512 count=2800
+	$(Q)dd if=$< of=$@ bs=512 conv=notrunc
+	$(Q)dd if=$(word 2,$^) of=$@ bs=512 conv=notrunc seek=5 # first stage plus second stage
 
 $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/boot-second-stage.bin
 	$(Q)cat $^ > $@
@@ -34,7 +36,7 @@ $(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm $(BOOT_DEPENDENCIES) | $(OBJ_DIR)/b
 	$(Q)nasm -I $(SRC_DIR)/boot -f bin $< -o $@
 
 $(OBJ_DIR)/kernel/kernel.bin: $(OBJ_DIR)/kernel/entry-kernel.o $(OBJ_KERNEL_DEPENDENCIES) $(OBJ_DRIVERS_DEPENDENCIES)
-	$(Q)ld -e 0x0 -Ttext 0x8000 -m elf_i386 $^ -o $@ --oformat binary
+	$(Q)ld -e 0x0 -Ttext 0x7E00 -m elf_i386 $^ -o $@ --oformat binary
 
 $(OBJ_DIR)/kernel/entry-kernel.o: $(SRC_DIR)/kernel/entry-kernel.asm | $(OBJ_DIR)/kernel
 	$(Q)nasm -f elf32 $^ -o $@

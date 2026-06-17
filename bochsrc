@@ -1,0 +1,15 @@
+megs: 32
+
+romimage: file=/usr/share/bochs/BIOS-bochs-latest
+vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest.bin
+
+boot: disk
+
+ata0-master: type=disk, path="os-image", mode=flat
+
+log: bochs.log
+panic: action=ask
+error: action=report
+info: action=report
+
+display_library: sdl2

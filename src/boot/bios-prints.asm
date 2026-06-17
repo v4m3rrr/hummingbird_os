@@ -1,29 +1,3 @@
-; ;ax - num
-; print_num:
-    ; push ax
-    ; push bx
-    ; push cx
-    ; push dx
-
-;     mov cx,10
-; print_num_loop:
-;     xor dx,dx
-;     ;dx r ax q
-;     div cx
-;     mov bx,ax
-;     mov ax,dx
-;     add ax,'0'
-;     call putch
-;     mov ax,bx
-;     test ax,ax
-;     jnz print_num_loop
-
-;     pop dx
-;     pop cx
-;     pop bx
-;     pop ax
-;     ret
-
 ; ax - hex
 puthex:
     push ax
@@ -32,12 +6,12 @@ puthex:
     push dx
     push si
 
-    push ax
-    mov al,'0'
-    call putch
-    mov al,'x'
-    call putch
-    pop ax
+    ;push ax
+    ;mov al,'0'
+    ;call putch
+    ;mov al,'x'
+    ;call putch
+    ;pop ax
 
     mov bl,al
     mov al,ah
@@ -82,6 +56,21 @@ puthex_continue:
     pop ax
     ret
 
+; eax-number
+puthex_64:
+  push eax
+  push ebx
+
+  mov ebx, eax
+  shr eax,16
+  call puthex
+  mov eax,ebx
+  call puthex
+  
+  pop ebx
+  pop eax
+  ret
+
 ;si-pointer to string
 print:
     push ax
@@ -96,7 +85,6 @@ print_loop:
     jmp print_loop
 
 print_exit:
-
     pop si
     pop ax
     ret
@@ -180,7 +168,12 @@ print_disk_read_log:
     pop si
     ret
 
-; Constants must be the same as in bios-prints-color
+; chaning any of those values might need change in all of them
 PAGE_NUMBER equ 00h
-SCREEN_WIDTH equ 80
-SCREEN_HEIGHT equ 25
+SCREEN_WIDTH equ 80 
+GRAPHICS_MODE equ 03h ; 80x25 characters ;it not guaranteed
+
+STR_STATUS:
+  db "status: ",0
+STR_LOCATION:
+  db "location: ",0
