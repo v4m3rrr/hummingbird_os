@@ -1,7 +1,7 @@
 GDT_START:
 GDT_NULL_DESC:
   times 8 db 0
-GDT_KERNEL_CODE_DESC:
+GDT_CODE_DESC:
   dw 0xffff     ;first 16bits of limit in bytes or 4KiB pages
   dw 0x0        ;first 16bits of base
   db 0x0        ;another 8 bits of base
@@ -40,28 +40,12 @@ GDT_KERNEL_CODE_DESC:
   ; should always be clear
   ;0 Reserved
   db 0x0 ; last 8 bits of 32 bit base
-GDT_KERNEL_DATA_DESC:
+GDT_DATA_DESC:
   ; applies the same above
   dw 0xffff
   dw 0x0 
   db 0x0 
   db 0b10010011
-  db 0b11001111
-  db 0x0 
-GDT_USER_CODE_DESC:
-  ; applies the same above
-  dw 0xffff
-  dw 0x0 
-  db 0x0 
-  db 0b11111011
-  db 0b11001111
-  db 0x0 
-GDT_USER_DATA_DESC:
-  ; applies the same above
-  dw 0xffff
-  dw 0x0 
-  db 0x0 
-  db 0b11110011
   db 0b11001111
   db 0x0 
 GDT_END:
@@ -70,8 +54,6 @@ GDT_DESC:
   dw GDT_END-GDT_START-1 ; maximum offset hence -1
   dd GDT_START
 
-KERNEL_CODE_SEG equ GDT_KERNEL_CODE_DESC - GDT_START
-KERNEL_DATA_SEG equ GDT_KERNEL_DATA_DESC - GDT_START
+CODE_SEG equ GDT_CODE_DESC - GDT_START
+DATA_SEG equ GDT_DATA_DESC - GDT_START
 
-USER_CODE_SEG equ GDT_USER_CODE_DESC - GDT_START
-USER_DATA_SEG equ GDT_USER_DATA_DESC - GDT_START
