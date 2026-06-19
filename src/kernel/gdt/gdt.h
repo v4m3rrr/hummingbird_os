@@ -19,19 +19,25 @@
 
 #define GDT_MAX_LIMIT (uint32_t)0xfffff
 
-typedef struct __attribute__((__packed__)) {
+#define GDT_NULL_DESC_INDEX (uint8_t)0x0
+#define GDT_KERNEL_CODE_DESC_INDEX (uint8_t)0x1
+#define GDT_KERNEL_DATA_DESC_INDEX (uint8_t)0x2
+#define GDT_USER_CODE_DESC_INDEX (uint8_t)0x3
+#define GDT_USER_DATA_DESC_INDEX (uint8_t)0x4
+
+typedef struct gdt_entry_t {
   uint16_t low_limit;
   uint16_t low_base;
   uint8_t mid_base;
   uint8_t access_byte;
   uint8_t high_limit_and_flags; // 0-3 high_limit 4-7 flags
   uint8_t high_base;
-} gdt_entry_t;
+} __attribute__((__packed__)) gdt_entry_t;
 
-typedef struct __attribute__((__packed__)) {
+typedef struct gdtr_t {
   uint16_t limit;  // size - 1
   uint32_t offset; // linear address (paging applies)
-} gdtr_t;
+} __attribute__((__packed__)) gdtr_t;
 
 void gdt_init_32_proc_mode();
 

@@ -7,7 +7,6 @@
 int kernel_main() {
   const char *humBird = "Hummingbird OS";
   print(humBird);
-
   gdt_init_32_proc_mode();
 
   return 0;

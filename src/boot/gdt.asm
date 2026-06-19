@@ -15,7 +15,8 @@ GDT_CODE_DESC:
   ;2 DC: Direction bit:
   ; For data sel 0 seg grows up, 1 seg grows down has to
   ; be changed offset has to be greater than limit
-  ; For code sel: 0 code can be run only form the same DPL ring
+  ; For code sel: 0 code can be run only 
+  ;form the strictly from the same DPL ring
   ; 1 code can be run from equal or lower DPL
   ;1 RW: Readable/Wriatable bit:
   ; For code seg Readable - 0 read access for this seg not
@@ -30,6 +31,22 @@ GDT_CODE_DESC:
   ;is set to 0, the CPU trying to set this bit will 
   ;trigger a page fault. Best left set to 1 unless 
   ;otherwise needed. 
+  ;(FROM INTEL MANUAL)
+  ;The accessed bit indicates whether the segment has been
+  ;accessed since the last time the operating-system or
+  ;executive cleared the bit. The processor sets this 
+  ;bit whenever it loads a segment selector for the segment into a
+  ;segment register, assuming that the type of memory 
+  ;that contains the segment descriptor supports processor
+  ;writes. The bit remains set until explicitly cleared. 
+  ;This bit can be used both for virtual memory management and for debugging.
+  ;If the segment descriptors in the GDT or an LDT are placed in ROM, 
+  ;the processor can enter an indefinite loop if
+  ;software or the processor attempts to update (write to) the ROM-based 
+  ;segment descriptors. To prevent this
+  ;problem, set the accessed bits for all segment descriptors placed 
+  ;in a ROM. Also, remove operating-system or
+  ;executive code that attempts to modify segment descriptors located in ROM
   db 0b11001111 ; 4 right bits is last bits of 20 bit limit
   ; left most bits are flags (from left):
   ;3 G: Granularity flag: indicades wheter limit graduialty
@@ -38,7 +55,7 @@ GDT_CODE_DESC:
   ; 32 but procted mode seg.
   ;1 L: Long-mode flag. 1 - 64-bit code seg. When DB set
   ; should always be clear
-  ;0 Reserved
+  ;0 AVL (from intel manual) available for use by system software.
   db 0x0 ; last 8 bits of 32 bit base
 GDT_DATA_DESC:
   ; applies the same above
