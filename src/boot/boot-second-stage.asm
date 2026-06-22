@@ -207,7 +207,7 @@ or eax,0x1
 mov cr0,eax
 
 ; Last init stage
-jmp KERNEL_CODE_SEG:INIT_PM
+jmp CODE_SEG:INIT_PM
 
 cli
 hlt
@@ -244,19 +244,16 @@ STR_SMAP_ERROR:
 
 [bits 32]
 INIT_PM:
-	mov eax,KERNEL_DATA_SEG
-	mov ds,eax
-	mov ss,eax
-	mov es,eax
-	mov fs,eax
-	mov gs,eax
+mov eax,DATA_SEG
+mov ds,eax
+mov ss,eax
+mov es,eax
+mov fs,eax
+mov gs,eax
 
-  ; TODO
-  ; disk number is on stack
-	mov ebp,0x90000
-	mov esp,ebp
-
-	jmp KERNEL_POINTER
+mov ebp,0x90000
+mov esp,ebp
+jmp KERNEL_POINTER
 
 times 512*SECOND_STAGE_SECTORS_NUM - 2 - ($-$$) db 0
 dw 0xdefa ;FADE it just me it is not necessary

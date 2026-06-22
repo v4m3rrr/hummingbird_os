@@ -3,7 +3,9 @@
 [extern kernel_main]
 
 entry_kernel:
-    call kernel_main
+cld ; to work with C clears direction bit
+cli
+call kernel_main
 
-    cli
-    hlt
+cli
+hlt

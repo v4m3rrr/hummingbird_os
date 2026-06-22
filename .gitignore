@@ -2,3 +2,6 @@ obj
 os-image
 docs
 bochs.log
+compile_commands.json
+.cache
+.clang-format
