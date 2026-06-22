@@ -17,6 +17,7 @@
 #define GDT_FLAG_16_BIT_PROCTED_MODE (uint8_t)0x0
 #define GDT_FLAG_LONG_MODE (uint8_t)0x2
 
+#define GDT_FLAT_MODEL_BASE (uint32_t)0x0
 #define GDT_MAX_LIMIT (uint32_t)0xfffff
 
 #define GDT_NULL_DESC_INDEX (uint8_t)0x0

@@ -4,7 +4,7 @@ static void gdt_add_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
                           uint8_t flags, gdt_entry_t *out_entry);
 static void gdt_reload_flat_mem();
 
-__attribute__((aligned(0x08))) static gdt_entry_t gdt[5] = {0};
+__attribute__((aligned(sizeof(gdt_entry_t)))) static gdt_entry_t gdt[5] = {0};
 static gdtr_t gdtr = {0};
 
 // extern int gdt_reload(void *gdtr);
@@ -14,22 +14,22 @@ void gdt_init_32_proc_mode() {
   gdt_add_entry(0, 0, 0, 0, &gdt[GDT_NULL_DESC_INDEX]);
 
   // Kernel Code Descriptor
-  gdt_add_entry(GDT_ACCESS_KERNEL_CODE, 0, GDT_MAX_LIMIT,
+  gdt_add_entry(GDT_ACCESS_KERNEL_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_KERNEL_CODE_DESC_INDEX]);
 
   // Kernel Data Descriptor
-  gdt_add_entry(GDT_ACCESS_KERNEL_DATA, 0, GDT_MAX_LIMIT,
+  gdt_add_entry(GDT_ACCESS_KERNEL_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_KERNEL_DATA_DESC_INDEX]);
 
   // User Code Descriptor
-  gdt_add_entry(GDT_ACCESS_USER_CODE, 0, GDT_MAX_LIMIT,
+  gdt_add_entry(GDT_ACCESS_USER_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_USER_CODE_DESC_INDEX]);
 
   // User Data Descriptor
-  gdt_add_entry(GDT_ACCESS_USER_DATA, 0, GDT_MAX_LIMIT,
+  gdt_add_entry(GDT_ACCESS_USER_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_USER_DATA_DESC_INDEX]);
 
@@ -61,7 +61,7 @@ static void gdt_add_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
 static void gdt_reload_flat_mem() {
   __asm__ volatile("pushf\n\t"
                    "cli\n\t"
-                   "lgdt (%0)\n\t"
+                   "lgdt %0\n\t"
                    "ljmp %1,$1f\n\t"
                    "1:\n\t"
                    "movw %2,%%ds\n\t"
@@ -71,7 +71,7 @@ static void gdt_reload_flat_mem() {
                    "movw %2,%%gs\n\t"
                    "popf\n\t"
                    :
-                   : "r"(&gdtr),
+                   : "m"(gdtr),
                      "i"((uint16_t)(GDT_KERNEL_CODE_DESC_INDEX << 3)),
                      "r"((uint16_t)(GDT_KERNEL_DATA_DESC_INDEX << 3))
                    : "memory");
@@ -83,5 +83,6 @@ static void gdt_reload_flat_mem() {
   ;distinction between "old CS" and "new CS" irrelevant for address
   computation.
   */
+  // comment for old .asm file
   return;
 }

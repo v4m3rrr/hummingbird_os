@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #define VIDEO_MEMORY (uint8_t *)0xB8000
-extern uint8_t *VIDEO_POINTER;
 
+void clear();
 void putch(uint8_t c);
 void print(const char *str);
 
