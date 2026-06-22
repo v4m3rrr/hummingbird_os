@@ -1,35 +1,33 @@
 #include "kernel/gdt/gdt.h"
 
-static void gdt_add_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
+static void gdt_set_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
                           uint8_t flags, gdt_entry_t *out_entry);
 static void gdt_reload_flat_mem();
 
 __attribute__((aligned(sizeof(gdt_entry_t)))) static gdt_entry_t gdt[5] = {0};
 static gdtr_t gdtr = {0};
 
-// extern int gdt_reload(void *gdtr);
-
 void gdt_init_32_proc_mode() {
   // NULL Descriptor
-  gdt_add_entry(0, 0, 0, 0, &gdt[GDT_NULL_DESC_INDEX]);
+  gdt_set_entry(0, 0, 0, 0, &gdt[GDT_NULL_DESC_INDEX]);
 
   // Kernel Code Descriptor
-  gdt_add_entry(GDT_ACCESS_KERNEL_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
+  gdt_set_entry(GDT_ACCESS_KERNEL_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_KERNEL_CODE_DESC_INDEX]);
 
   // Kernel Data Descriptor
-  gdt_add_entry(GDT_ACCESS_KERNEL_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
+  gdt_set_entry(GDT_ACCESS_KERNEL_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_KERNEL_DATA_DESC_INDEX]);
 
   // User Code Descriptor
-  gdt_add_entry(GDT_ACCESS_USER_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
+  gdt_set_entry(GDT_ACCESS_USER_CODE, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_USER_CODE_DESC_INDEX]);
 
   // User Data Descriptor
-  gdt_add_entry(GDT_ACCESS_USER_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
+  gdt_set_entry(GDT_ACCESS_USER_DATA, GDT_FLAT_MODEL_BASE, GDT_MAX_LIMIT,
                 GDT_FLAG_LIMIT_4KIB_BLOCKS | GDT_FLAG_32_BIT_MODE,
                 &gdt[GDT_USER_DATA_DESC_INDEX]);
 
@@ -41,7 +39,7 @@ void gdt_init_32_proc_mode() {
   return;
 }
 
-static void gdt_add_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
+static void gdt_set_entry(uint8_t access_byte, uint32_t base, uint32_t limit,
                           uint8_t flags, gdt_entry_t *out_entry) {
   *out_entry = (gdt_entry_t){0};
 

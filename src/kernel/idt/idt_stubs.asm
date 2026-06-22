@@ -1,6 +1,6 @@
 [bits 32]
 
-extern test_handler
+extern divide_error_handler
 extern panic_handler
 
 %macro isr_stub 1
@@ -17,7 +17,10 @@ isr_stub_error_%+%1:
   iret
 %endmacro
 
-isr_stub 0
+isr_stub_0:
+  call divide_error_handler
+  iret
+
 isr_stub 1
 isr_stub 2
 isr_stub 3

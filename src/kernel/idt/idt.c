@@ -1,9 +1,8 @@
 #include "kernel/idt/idt.h"
 
-#include "kernel/drivers/video.h"
 #include "kernel/gdt/gdt.h"
 
-static void idt_add_entry(uint8_t gate_type_and_flags, uint16_t segment_sel,
+static void idt_set_entry(uint8_t gate_type_and_flags, uint16_t segment_sel,
                           uint32_t offset, idt_entry_t *out_entry);
 extern void *isr_stub_table[];
 
@@ -13,7 +12,7 @@ static idtr_t idtr = {0};
 
 void idt_init_32_proc_mode() {
   for (uint32_t i = 0; i < IDT_INTEL_MANDATORY_EXCEPTIONS_NUMBER; ++i) {
-    idt_add_entry(
+    idt_set_entry(
         IDT_GATE_TYPE_INTERRUPT | IDT_FLAG_SIZE_GATE_32 | IDT_FLAG_PRESENT,
         GDT_KERNEL_CODE_DESC_INDEX << 3, (uint32_t)isr_stub_table[i], &idt[i]);
   }
@@ -24,7 +23,7 @@ void idt_init_32_proc_mode() {
   __asm__ volatile("lidt %0" : : "m"(idtr) : "memory");
 }
 
-static void idt_add_entry(uint8_t gate_type_and_flags, uint16_t segment_sel,
+static void idt_set_entry(uint8_t gate_type_and_flags, uint16_t segment_sel,
                           uint32_t offset, idt_entry_t *out_entry) {
   *out_entry = (idt_entry_t){0};
 
@@ -38,11 +37,9 @@ static void idt_add_entry(uint8_t gate_type_and_flags, uint16_t segment_sel,
   return;
 }
 
-__attribute__((noreturn)) void panic_handler() {
-  clear();
-  print("Kernel entered panic state. The system reboot is needed.");
-  __asm__ volatile("cli;hlt");
-  __builtin_unreachable();
-}
-
-void test_handler() { print("Test if it returns correctly"); }
+//__attribute__((noreturn)) void panic_handler() {
+//  clear();
+//  print("Kernel entered panic state. The system reboot is needed.");
+//  __asm__ volatile("cli;hlt");
+//  __builtin_unreachable();
+//}
