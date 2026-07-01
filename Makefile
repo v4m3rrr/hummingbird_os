@@ -23,6 +23,9 @@ KERNEL_HEADERS = $(wildcard $(SRC_DIR)/kernel/*.h)
 KERNEL_ENTRY_OBJ := $(OBJ_DIR)/kernel/entry-kernel.o
 OBJ_KERNEL_DEPENDENCIES_NO_ENTRY := $(filter-out $(KERNEL_ENTRY_OBJ),$(OBJ_KERNEL_DEPENDENCIES))
 
+WELCOME_IMG:=images/welcome.bmp
+WELCOME_OBJ:=$(OBJ_DIR)/welcome.o
+
 all: os-image
 
 run: os-image
@@ -39,7 +42,10 @@ $(OBJ_DIR)/boot/boot.bin: $(OBJ_DIR)/boot/boot-first-stage.bin $(OBJ_DIR)/boot/b
 $(OBJ_DIR)/boot/%.bin: $(SRC_DIR)/boot/%.asm $(BOOT_DEPENDENCIES) $(SRC_DIR)/config.txt | $(OBJ_DIR)/boot
 	$(Q)nasm -I $(SRC_DIR)/boot -f bin $< -o $@
 
-$(OBJ_DIR)/kernel/kernel.bin: $(KERNEL_ENTRY_OBJ) $(OBJ_KERNEL_DEPENDENCIES_NO_ENTRY) 
+$(WELCOME_OBJ): $(WELCOME_IMG)
+	objcopy -I binary -O elf32-i386 -B i386 $< $@
+
+$(OBJ_DIR)/kernel/kernel.bin: $(KERNEL_ENTRY_OBJ) $(OBJ_KERNEL_DEPENDENCIES_NO_ENTRY) $(WELCOME_OBJ)
 	$(Q)ld -e 0x0 -Ttext 0x7E00 -m elf_i386 $^ -o $@ --oformat binary
 
 $(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.asm $(SRC_DIR)/config.txt

@@ -121,56 +121,18 @@ add di,24
 test ebx,ebx
 jnz loop_smap
 
-jmp read_kernel_from_disk
+jmp contiue_boot
 smap_error:
 mov si,STR_SMAP_ERROR
 call println
 
 cli
 hlt
-;;;;;;;;;;;;;;;;;;; Read kernel sectors into memory ;;;;;;;;;;;;;;;;;;;;;
-print_disk_status:
-;get disk status
-mov ah,01h
-mov dl,[ds:DISK_NUMBER_POINTER]
-int 13h
 
-mov si,STR_LAST_DISK_STATUS
-call print
-
-mov al,ah
-xor ah,ah
-call puthex
-
-call new_line
-
-mov ah,00h
-int 16h
-
-; reset disk
-mov ah, 00h
-mov dl,[ds:DISK_NUMBER_POINTER]
-int 13h
-read_kernel_from_disk:
-mov ah,02h                              ; read sectors to memory option
-mov al,KERNEL_SECTORS_NUM               ; amount of sectors to read
-mov ch,00h                              ; cylinder
-mov cl,02h + SECOND_STAGE_SECTORS_NUM   ; sector number start
-mov dl,[ds:DISK_NUMBER_POINTER]
-mov dh,00h                              ; head number
-
-; Location es:bx
-xor bx,bx
-mov es,bx
-mov bx,KERNEL_POINTER
-int 13h 
-
-jc print_disk_status
-
-; Print log
-mov si,STR_KERNEL
-call print_disk_read_log
-
+contiue_boot:
+mov si,disk_address_packet
+mov dx,[ds:DISK_NUMBER_POINTER]
+call read_from_disk
 ;;;;;;;;;;;;;;;;;;;          Disabling NMI          ;;;;;;;;;;;;;;;;;;;;;
 
 ; Disabling is suggested by Intel Developers Manual
@@ -212,6 +174,14 @@ jmp CODE_SEG:INIT_PM
 cli
 hlt
 
+disk_address_packet:
+	db 10h
+  db 0
+  dw KERNEL_SECTORS_NUM
+  dw KERNEL_POINTER
+  dw 0x0
+  dq 0x1+SECOND_STAGE_SECTORS_NUM
+
 ;;;;;;;;;;;;;;;;;;;     Mesasges     ;;;;;;;;;;;;;;;;;;;;;
 STR_KERNEL:
   db "Kernel load ",0
@@ -241,6 +211,7 @@ STR_SMAP_ERROR:
 %include "bios-prints.asm"
 %include "A20-enablers.asm"
 %include "gdt.asm"
+%include "bios_read_disk_lba.asm"
 
 [bits 32]
 INIT_PM:
