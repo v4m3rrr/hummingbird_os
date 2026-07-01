@@ -10,7 +10,7 @@ DISK_NUMBER_POINTER equ 0x1700
 MEMORY_MAP_ADDRESS equ 0x1800
 
 KERNEL_POINTER equ 0x7E00 ; to 0xBE00 ; must be updated also in Makefile
-KERNEL_SECTORS_NUM equ 20h ; if updated must be also updated in Makefile
+KERNEL_SECTORS_NUM equ 200 ; if updated must be also updated in Makefile
 
 STACK_POINTER equ 0x400
 STACK_SEGMENT_ADDRESS equ 0x50
